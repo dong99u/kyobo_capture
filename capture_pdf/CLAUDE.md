@@ -10,5 +10,4 @@
 | #1301 | 11:12 PM | 🔵 | Reviewed capture_with_button implementation using click_and_wait method | ~391 |
 | #1297 | 11:00 PM | ✅ | CLI 구조 변경 검증 완료 - click.core.Group 타입으로 멀티 커맨드 지원 확인 | ~170 |
 | #1295 | " | ✅ | CLI 도움말에 3개 서브커맨드 정상 표시 확인 - button, compile, screenshot | ~207 |
-| #1288 | 10:57 PM | 🔵 | 교보도서관 앱 하단 캡쳐 버튼 발견 - 자동 클릭 방식으로 구현 변경 검토 | ~186 |
 </claude-mem-context>
