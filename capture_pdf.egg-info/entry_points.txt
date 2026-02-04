@@ -1,0 +1,2 @@
+[console_scripts]
+capture-pdf = capture_pdf.cli:cli

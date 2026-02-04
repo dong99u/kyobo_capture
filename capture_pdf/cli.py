@@ -214,12 +214,12 @@ def button(pages: int, button: str, confirm: str, delay: float, capture_delay: f
 @click.option('--input', '-i', required=True, type=click.Path(exists=True), help='Folder with captured images')
 @click.option('--output', '-o', required=True, type=click.Path(), help='Output PDF path')
 @click.option('--pattern', default='*.png', help='File pattern to match (default: *.png)')
-@click.option('--dpi', default=150, type=int, help='PDF resolution (72=screen, 150=default, 300=print quality)')
-@click.option('--sort', type=click.Choice(['name', 'time']), default='name', help='Sort order: name (alphabetical) or time (creation time)')
-def compile(input: str, output: str, pattern: str, dpi: int, sort: str) -> None:
-    """Compile captured images into PDF."""
+@click.option('--sort', type=click.Choice(['name', 'time', 'time-desc']), default='name', help='Sort: name, time (oldest first), time-desc (newest first)')
+def compile(input: str, output: str, pattern: str, sort: str) -> None:
+    """Compile captured images into PDF (lossless, original quality)."""
     from pathlib import Path
     import os
+    import img2pdf
 
     input_path = Path(input)
     output_path = Path(output)
@@ -233,18 +233,23 @@ def compile(input: str, output: str, pattern: str, dpi: int, sort: str) -> None:
 
     # Sort files
     if sort == 'time':
-        # Sort by modification time (creation time on most systems)
+        # Sort by modification time (oldest first)
         image_files.sort(key=lambda f: os.path.getmtime(f))
         click.echo(f"Sorting by creation time (oldest first)")
+    elif sort == 'time-desc':
+        # Sort by modification time (newest first)
+        image_files.sort(key=lambda f: os.path.getmtime(f), reverse=True)
+        click.echo(f"Sorting by creation time (newest first)")
     else:
         image_files.sort()
         click.echo(f"Sorting by filename")
 
     click.echo(f"Found {len(image_files)} images")
-    click.echo(f"Using {dpi} DPI resolution")
+    click.echo(f"Converting with original quality (lossless)...")
 
-    compiler = PDFCompiler()
-    compiler.compile_from_files(image_files, output_path, dpi=float(dpi))
+    # Use img2pdf for lossless conversion
+    with open(output_path, "wb") as f:
+        f.write(img2pdf.convert([str(p) for p in image_files]))
 
     click.echo(f"Created {output_path}")
 
