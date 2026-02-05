@@ -21,8 +21,8 @@ capture-pdf button -p 530 -b 2763,1769 --confirm 2268,1022
 ### 2단계: PDF 변환
 
 ```bash
-# 캡쳐된 이미지를 고화질 PDF로 변환
-capture-pdf compile -i ~/Desktop/book -o ~/Desktop/book.pdf --pattern "*.jpeg" --sort time --dpi 300
+# 캡쳐된 이미지를 PDF로 변환 (원본 화질 유지)
+capture-pdf compile -i ~/Desktop/book -o ~/Desktop/book.pdf --pattern "*.jpeg" --sort time
 ```
 
 ---
@@ -91,15 +91,9 @@ capture-pdf compile [옵션]
 | `--input` | `-i` | 이미지 폴더 (필수) | `~/Desktop/book` |
 | `--output` | `-o` | 출력 PDF 경로 (필수) | - |
 | `--pattern` | - | 파일 패턴 | `*.jpeg` |
-| `--sort` | - | 정렬 방식 (name/time) | `time` |
-| `--dpi` | - | 해상도 | `300` |
+| `--sort` | - | 정렬 방식 (name/time/time-desc) | `time` |
 
-**DPI 설정:**
-| DPI | 용도 | 파일 크기 |
-|-----|------|-----------|
-| 72 | 화면 전용 | 작음 |
-| 150 | 일반 용도 (기본값) | 중간 |
-| **300** | **고화질/인쇄용 (권장)** | 큼 |
+> img2pdf를 사용하여 **원본 이미지를 그대로 PDF에 임베딩**합니다. 재압축 없이 100% 원본 화질이 유지됩니다.
 
 ### screenshot - 직접 스크린샷 모드
 
