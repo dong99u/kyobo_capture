@@ -113,13 +113,31 @@ capture-pdf screenshot -p [페이지수] -o [출력파일] -r [x,y,w,h]
 
 ## 버튼 좌표 찾는 방법
 
-마우스를 버튼 위에 올려놓고 다음 명령어 실행:
+### 방법 1: 명령어 실행 후 마우스 이동
 
 ```bash
-sleep 3 && python -c "from Quartz import CGEventCreate, CGEventGetLocation; e=CGEventCreate(None); loc=CGEventGetLocation(e); print(f'x={int(loc.x)}, y={int(loc.y)}')"
+sleep 3 && uv run python -c "from Quartz import CGEventCreate, CGEventGetLocation; e=CGEventCreate(None); loc=CGEventGetLocation(e); print(f'x={int(loc.x)}, y={int(loc.y)}')"
 ```
 
-3초 후 현재 마우스 위치가 출력됩니다.
+**사용법:**
+1. 위 명령어 실행
+2. 3초 안에 원하는 버튼 위에 마우스 올려놓기
+3. 좌표 출력 확인
+
+### 방법 2: macOS 기본 도구 (DigitalColor Meter)
+
+1. Spotlight (Cmd + Space) → "DigitalColor Meter" 검색
+2. 앱 실행 후 마우스를 원하는 위치로 이동
+3. 창 제목에 표시되는 좌표 확인 (Location: x, y)
+
+### 좌표 예시
+
+| 버튼 | 좌표 (내 설정) |
+|------|----------------|
+| 캡쳐 버튼 | `2763,1769` |
+| 확인 버튼 | `2268,1022` |
+
+> ⚠️ 좌표는 화면 해상도와 앱 위치에 따라 다릅니다. 직접 확인하세요.
 
 ---
 
