@@ -254,6 +254,32 @@ def compile(input: str, output: str, pattern: str, sort: str) -> None:
     click.echo(f"Created {output_path}")
 
 
+@cli.command()
+@click.option('--input', '-i', required=True, type=click.Path(exists=True), help='Input PDF file')
+@click.option('--output', '-o', required=True, type=click.Path(), help='Output PDF path')
+@click.option('--mode', '-m', type=click.Choice(['black', 'white', 'auto']), default='auto', help='Margin color to detect (default: auto)')
+@click.option('--threshold', '-t', default=10, type=int, help='Color distance threshold (default: 10)')
+@click.option('--padding', default=0, type=int, help='Pixels to add after crop (default: 0)')
+def crop(input: str, output: str, mode: str, threshold: int, padding: int) -> None:
+    """Crop PDF pages by removing black/white margins."""
+    from capture_pdf.cropper import MarginDetector, PageCropper
+
+    input_path = Path(input)
+    output_path = Path(output)
+
+    click.echo(f"Cropping {input_path}...")
+    click.echo(f"Mode: {mode}, Threshold: {threshold}, Padding: {padding}")
+
+    try:
+        detector = MarginDetector(mode=mode, threshold=threshold)
+        cropper = PageCropper(detector, padding=padding)
+        cropper.crop_pdf(input_path, output_path)
+        click.echo(f"Created {output_path}")
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
+
+
 # Keep legacy main() for backwards compatibility
 def main(pages: int = None, output: str = None, delay: float = 1.0, region: str = None):
     """Legacy entry point - redirects to screenshot command."""

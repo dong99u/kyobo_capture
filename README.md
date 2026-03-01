@@ -25,6 +25,13 @@ capture-pdf button -p 530 -b 2763,1769 --confirm 2268,1022
 capture-pdf compile -i ~/Desktop/book -o ~/Desktop/book.pdf --pattern "*.jpeg" --sort time
 ```
 
+### 3단계: 여백 자르기 (선택)
+
+```bash
+# PDF에서 검은색/흰색 여백 자동 제거
+capture-pdf crop -i ~/Desktop/book.pdf -o ~/Desktop/book_cropped.pdf
+```
+
 ---
 
 ## 기능
@@ -34,12 +41,14 @@ capture-pdf compile -i ~/Desktop/book -o ~/Desktop/book.pdf --pattern "*.jpeg" -
 - 키보드 시뮬레이션을 통한 자동 페이지 넘김
 - 캡쳐된 이미지들을 고화질 PDF로 병합
 - 생성 시간 기준 페이지 정렬
+- PDF 여백 자동 감지 및 자르기
 
 ## 요구사항
 
 - macOS 12+ (Monterey, Ventura, Sonoma, Sequoia)
 - Python 3.13+
 - [uv](https://docs.astral.sh/uv/) (Python 패키지 관리자)
+- poppler (`brew install poppler`) — crop 기능에 필요
 - 시스템 권한:
   - **손쉬운 사용 권한**: 시스템 환경설정 > 개인정보 보호 및 보안 > 손쉬운 사용
 
@@ -48,6 +57,9 @@ capture-pdf compile -i ~/Desktop/book -o ~/Desktop/book.pdf --pattern "*.jpeg" -
 ```bash
 # uv 설치 (없는 경우)
 curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# poppler 설치 (crop 기능에 필요, 없는 경우)
+brew install poppler
 
 # 프로젝트 설정
 cd ~/my_project/capture_pdf
@@ -95,6 +107,39 @@ capture-pdf compile [옵션]
 
 > img2pdf를 사용하여 **원본 이미지를 그대로 PDF에 임베딩**합니다. 재압축 없이 100% 원본 화질이 유지됩니다.
 
+### crop - 여백 자르기
+
+```bash
+capture-pdf crop [옵션]
+```
+
+| 옵션 | 단축키 | 설명 | 기본값 |
+|------|--------|------|--------|
+| `--input` | `-i` | 입력 PDF 파일 (필수) | - |
+| `--output` | `-o` | 출력 PDF 경로 (필수) | - |
+| `--mode` | `-m` | 감지 모드 (black/white/auto) | `auto` |
+| `--threshold` | `-t` | 색상 허용 범위 (0-255) | `10` |
+| `--padding` | - | 자르기 후 추가 여백 (px) | `0` |
+
+**사용 예시:**
+
+```bash
+# 자동 감지 (검은색/흰색 여백 모두)
+capture-pdf crop -i book.pdf -o book_cropped.pdf
+
+# 검은색 여백만 제거
+capture-pdf crop -i book.pdf -o book_cropped.pdf --mode black
+
+# 흰색 여백 제거 + 감도 높임 + 여백 추가
+capture-pdf crop -i book.pdf -o book_cropped.pdf --mode white --threshold 15 --padding 10
+```
+
+**동작 원리:**
+1. PDF의 각 페이지를 300 DPI로 래스터화
+2. 4개 모서리 픽셀 샘플링으로 여백 색상 자동 감지 (auto 모드)
+3. 행/열 스캔으로 여백 경계 탐지
+4. 여백 제거 후 img2pdf로 무손실 PDF 재생성
+
 ### screenshot - 직접 스크린샷 모드
 
 ```bash
@@ -131,7 +176,7 @@ sleep 3 && uv run python -c "from Quartz import CGEventCreate, CGEventGetLocatio
 | 캡쳐 버튼 | `2763,1769` |
 | 확인 버튼 | `2268,1022` |
 
-> ⚠️ 좌표는 화면 해상도와 앱 위치에 따라 다릅니다. 직접 확인하세요.
+> 좌표는 화면 해상도와 앱 위치에 따라 다릅니다. 직접 확인하세요.
 
 ---
 
@@ -167,6 +212,10 @@ sleep 3 && uv run python -c "from Quartz import CGEventCreate, CGEventGetLocatio
 
 ### 확인 버튼이 클릭되지 않음
 → 좌표 확인 후 `--confirm` 값 수정
+
+### crop 시 여백이 제대로 제거되지 않음
+→ `--threshold` 값을 높여보세요 (예: `--threshold 20`)
+→ `--mode`를 명시적으로 지정하세요 (예: `--mode black`)
 
 ---
 
