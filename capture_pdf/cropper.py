@@ -103,7 +103,7 @@ class PageCropper:
         self.detector = detector
         self.padding = padding
 
-    def crop_pdf(self, input_path: Path, output_path: Path, dpi: int = 300) -> None:
+    def crop_pdf(self, input_path: Path, output_path: Path, dpi: int = 150, max_pages: int | None = None) -> None:
         """Crop all pages in a PDF and write to output."""
         info = pdfinfo_from_path(str(input_path))
         total_pages = info["Pages"]
@@ -111,9 +111,11 @@ class PageCropper:
         if total_pages == 0:
             raise ValueError("PDF has no pages")
 
+        end_page = min(total_pages, max_pages) if max_pages else total_pages
+
         with tempfile.TemporaryDirectory() as tmpdir:
             cropped_paths = []
-            for i in range(1, total_pages + 1):
+            for i in range(1, end_page + 1):
                 pages = convert_from_path(str(input_path), dpi=dpi, first_page=i, last_page=i)
                 page = pages[0]
                 box = self.detector.detect(page)
@@ -131,7 +133,7 @@ class PageCropper:
                 tmp_path = Path(tmpdir) / f"page_{i:04d}.png"
                 cropped.save(tmp_path, dpi=(dpi, dpi))
                 cropped_paths.append(str(tmp_path))
-                print(f"\r  Page {i}/{total_pages}", end="", flush=True)
+                print(f"\r  Page {i}/{end_page}", end="", flush=True)
 
             print()
             with open(output_path, "wb") as f:

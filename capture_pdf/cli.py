@@ -260,7 +260,8 @@ def compile(input: str, output: str, pattern: str, sort: str) -> None:
 @click.option('--mode', '-m', type=click.Choice(['black', 'white', 'auto']), default='auto', help='Margin color to detect (default: auto)')
 @click.option('--threshold', '-t', default=10, type=int, help='Color distance threshold (default: 10)')
 @click.option('--padding', default=0, type=int, help='Pixels to add after crop (default: 0)')
-def crop(input: str, output: str, mode: str, threshold: int, padding: int) -> None:
+@click.option('--pages', default=None, type=int, help='Process only first N pages (for testing)')
+def crop(input: str, output: str, mode: str, threshold: int, padding: int, pages: int | None) -> None:
     """Crop PDF pages by removing black/white margins."""
     from capture_pdf.cropper import MarginDetector, PageCropper
 
@@ -273,7 +274,7 @@ def crop(input: str, output: str, mode: str, threshold: int, padding: int) -> No
     try:
         detector = MarginDetector(mode=mode, threshold=threshold)
         cropper = PageCropper(detector, padding=padding)
-        cropper.crop_pdf(input_path, output_path)
+        cropper.crop_pdf(input_path, output_path, max_pages=pages)
         click.echo(f"Created {output_path}")
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
