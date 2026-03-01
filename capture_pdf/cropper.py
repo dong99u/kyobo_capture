@@ -6,7 +6,7 @@ from pathlib import Path
 import img2pdf
 import numpy as np
 from PIL import Image
-from pdf2image import convert_from_path
+from pdf2image import convert_from_path, pdfinfo_from_path
 
 
 @dataclass(frozen=True)
@@ -105,14 +105,17 @@ class PageCropper:
 
     def crop_pdf(self, input_path: Path, output_path: Path, dpi: int = 300) -> None:
         """Crop all pages in a PDF and write to output."""
-        pages = convert_from_path(str(input_path), dpi=dpi)
+        info = pdfinfo_from_path(str(input_path))
+        total_pages = info["Pages"]
 
-        if not pages:
+        if total_pages == 0:
             raise ValueError("PDF has no pages")
 
         with tempfile.TemporaryDirectory() as tmpdir:
             cropped_paths = []
-            for i, page in enumerate(pages):
+            for i in range(1, total_pages + 1):
+                pages = convert_from_path(str(input_path), dpi=dpi, first_page=i, last_page=i)
+                page = pages[0]
                 box = self.detector.detect(page)
                 cropped = page.crop((box.left, box.top, box.right, box.bottom))
 
@@ -125,9 +128,11 @@ class PageCropper:
                     padded.paste(cropped, (self.padding, self.padding))
                     cropped = padded
 
-                tmp_path = Path(tmpdir) / f"page_{i}.png"
+                tmp_path = Path(tmpdir) / f"page_{i:04d}.png"
                 cropped.save(tmp_path, dpi=(dpi, dpi))
                 cropped_paths.append(str(tmp_path))
+                print(f"\r  Page {i}/{total_pages}", end="", flush=True)
 
+            print()
             with open(output_path, "wb") as f:
                 f.write(img2pdf.convert(cropped_paths))
